@@ -7,10 +7,35 @@ ES_INDEX = os.getenv("ES_INDEX", "rag_docs")
 ES_URL = os.getenv("ES_URL", "http://localhost:9200")
 
 es = Elasticsearch(
-    hosts="http://localhost:9200",
+    hosts=[ES_URL],
     verify_certs=False,
     ssl_show_warn=False,
 )
+
+
+def create_index_if_not_exists(dims: int = 384):
+    """
+    Creates the Elasticsearch index with proper mapping for vector search.
+    Args:
+        dims: Dimension of the embedding vectors (default: 384 for all-MiniLM-L6-v2)
+    """
+    if not es.indices.exists(index=ES_INDEX):
+        mapping = {
+            "mappings": {
+                "properties": {
+                    "doc_name": {"type": "keyword"},
+                    "text": {"type": "text"},
+                    "embedding": {
+                        "type": "dense_vector",
+                        "dims": dims,
+                        "index": True,
+                        "similarity": "cosine"
+                    }
+                }
+            }
+        }
+        # Elasticsearch 8.x+ uses 'mappings' parameter directly
+        es.indices.create(index=ES_INDEX, mappings=mapping["mappings"])
 
 def index_documents(chunks: list[dict]):
     """
