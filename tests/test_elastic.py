@@ -1,15 +1,28 @@
 import pytest
-from src.retrieval.elastic import search_elastic
+from src.retrieval import elastic
 
-@pytest.mark.integration
-def test_search_elastic_produces_results():
+def test_search_elastic_produces_results(monkeypatch):
     # Arrange
-    query = "Change driving licence"
+    fake_hits = {
+        "hits": {
+            "hits": [
+                {
+                    "_id": "1",
+                    "_score": 0.95,
+                    "_source": {"doc_name": "Cat.pdf", "text": "Cat is a cat."}
+                },
+            ]
+        }
+    }
+    monkeypatch.setattr(elastic, "embed_texts", lambda texts: [[1.0, 0.0], [0.0, 1.0]])
+    monkeypatch.setattr(elastic.es, "search", lambda **kwargs: fake_hits)
 
     # Act
-    results = search_elastic(query, k=3)
+    results = elastic.search_elastic("cat", k=1)
 
     # Assert
     assert results is not None
-    assert len(results) >= 0
-    assert len(results) <= 3
+    assert len(results) == 1
+    assert results[0]["doc_name"] == "Cat.pdf"
+    assert results[0]["text"] == "Cat is a cat."
+    assert results[0]["score"] == 0.95

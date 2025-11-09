@@ -15,13 +15,22 @@ def test_retrieve_node(monkeypatch):
 
 def test_reason_node():
     """Test that reason_node generates the expected result structure."""
-    state = {"query": "test", "retrieved_chunks": ["chunk1"], "result": {}}
+    state = {
+        "query": "test",
+        "retrieved_chunks": [
+            {"chunk_id": 1, "doc_name": "test.pdf", "text": "Sample text", "score": 0.9}
+        ],
+        "result": {}
+    }
     new_state = reason_node(state)
 
     assert "answer" in new_state["result"]
     assert "confidence" in new_state["result"]
     assert isinstance(new_state["result"]["sources"], list)
     assert len(new_state["result"]["sources"]) > 0
+    assert new_state["result"]["sources"][0]["doc_name"] == "fake.pdf"
+    assert new_state["result"]["sources"][0]["content"] == "Sample text"
+    assert new_state["result"]["sources"][0]["score"] == 0.9
 
 
 def test_graph_returns_structured_output(monkeypatch):
@@ -29,7 +38,7 @@ def test_graph_returns_structured_output(monkeypatch):
     # Arrange - mock the Elasticsearch search
     def fake_search(query, k=3):
         return [
-            {"chunk_id": 1, "doc_name": "fake.pdf", "text": "Sample chunk", "score": 0.9}
+            {"chunk_id": 1, "doc_name": "fake.pdf", "text": "Sample chunk", "score": 0.95}
         ]
 
     monkeypatch.setattr("src.retrieval.elastic.search_elastic", fake_search)

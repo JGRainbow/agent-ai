@@ -22,7 +22,8 @@ def reason_node(state: GraphState) -> GraphState:
         "answer": "Stub answer based on retrieval",
         "confidence": 0.95,
         "sources": [
-            {"doc_name": "fake.pdf", "chunk_id": 1, "text_snippet": state["retrieved_chunks"][0], "score": 0.95}
+            {"doc_name": "fake.pdf", "chunk_id": 1, "content": chunk["text"], "score": chunk["score"]}
+            for chunk in state["retrieved_chunks"]
         ]
     }
     return state
