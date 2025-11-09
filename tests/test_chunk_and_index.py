@@ -1,17 +1,20 @@
 import pytest
-from src.chunk_and_index import chunk_text
+from src.chunk_and_index import chunk_texts
 
-def test_chunk_and_index_produces_overlap():
-    # Arrange
-    text = "A" * 1200
-    chunk_size = 500
-    overlap = 50
+def test_chunk_texts_respects_sentence_boundaries():
+    text = (
+        "You must send your old driving licence to the DVLA. "
+        "If your name has changed after marriage, you must include your marriage certificate. "
+        "It usually takes 3 weeks to get your new licence. "
+        "Do not drive until you receive it."
+    )
 
-    # Act
-    chunks = chunk_text(text, chunk_size, overlap)
+    chunks = chunk_texts([text], chunk_size=150, overlap=20)
 
-    # Assert
-    assert len(chunks) == 3
-    assert chunks[0] == "A" * 500
-    assert chunks[1] == "A" * 500
-    assert chunks[2] == "A" * 200
+    # Check general properties
+    assert all(len(c["content"]) <= 200 for c in chunks)
+    assert len(chunks) >= 2
+
+    # Each chunk should end at a sentence boundary (roughly)
+    for c in chunks[:-1]:
+        assert c["content"].strip().endswith((".", "!", "?")), f"Chunk not sentence-aligned: {c['content']}"
