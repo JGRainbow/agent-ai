@@ -21,6 +21,16 @@ class Settings(BaseSettings):
     default_chunk_size: int = Field(default=500, description="Default chunk size for text splitting")
     default_chunk_overlap: int = Field(default=50, description="Default chunk overlap for text splitting")
 
+    # LLM settings
+    openai_api_key: str = Field(
+        default="test-api-key",
+        description="OpenAI API key (set OPENAI_API_KEY env var or in .env file)"
+    )
+    openai_model: str = Field(
+        default="gpt-4o-mini",
+        description="OpenAI model to use (set OPENAI_MODEL env var or in .env file)"
+    )
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

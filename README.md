@@ -102,6 +102,10 @@ cp .env.example .env
 Default values:
 - `ES_URL=http://localhost:9200`
 - `ES_INDEX=rag_docs`
+- `OPENAI_API_KEY=test-api-key` (set to your real key in `.env`)
+- `OPENAI_MODEL=gpt-4o-mini`
+
+See `.env.example` for all available configuration options.
 
 ## Usage
 

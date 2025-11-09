@@ -1,7 +1,8 @@
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from src.agent.graph import run_agent, retrieve_node, reason_node, build_graph
 from src.models.types import GraphState, RetrievedChunk
 from src.adapters.repository import AbstractDatabaseRepository
+from src.llm.provider import AbstractLLMProvider
 
 
 def test_retrieve_node():
@@ -28,6 +29,14 @@ def test_retrieve_node():
 
 def test_reason_node():
     """Test that reason_node generates the expected result structure."""
+    # Create a mock LLM provider
+    mock_llm = Mock(spec=AbstractLLMProvider)
+    mock_llm.generate_answer.return_value = {
+        "answer": "Test answer",
+        "confidence": 0.9,
+        "reasoning": "Test reasoning"
+    }
+
     state: GraphState = {
         "query": "test",
         "retrieved_chunks": [
@@ -35,7 +44,7 @@ def test_reason_node():
         ],
         "result": {"answer": "", "confidence": 0.0, "sources": []}
     }
-    new_state = reason_node(state)
+    new_state = reason_node(state, llm_provider=mock_llm)
 
     result = new_state["result"]
     assert "answer" in result
@@ -48,6 +57,8 @@ def test_reason_node():
     assert result["sources"][0].content == "Sample text"
     assert result["sources"][0].score == 0.9
     assert result["sources"][0].chunk_id == "1"
+    assert result["answer"] == "Test answer"
+    assert result["confidence"] == 0.9
 
 
 def test_graph_returns_structured_output():
@@ -58,8 +69,16 @@ def test_graph_returns_structured_output():
         {"chunk_id": "1", "doc_name": "test.pdf", "text": "Sample chunk", "score": 0.95}
     ]
 
+    # Create a mock LLM provider
+    mock_llm = Mock(spec=AbstractLLMProvider)
+    mock_llm.generate_answer.return_value = {
+        "answer": "Test answer from LLM",
+        "confidence": 0.85,
+        "reasoning": "Test"
+    }
+
     # Act
-    result = run_agent("How do I change my name?", repository=mock_repo)
+    result = run_agent("How do I change my name?", repository=mock_repo, llm_provider=mock_llm)
 
     # Assert
     assert "answer" in result
@@ -71,6 +90,7 @@ def test_graph_returns_structured_output():
     assert result["sources"][0].chunk_id == "1"
     assert result["sources"][0].score == 0.95
     assert result["sources"][0].content == "Sample chunk"
+    assert result["answer"] == "Test answer from LLM"
 
 
 def test_build_graph():

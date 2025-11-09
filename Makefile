@@ -47,6 +47,9 @@ create-index:
 delete-index:
 	@python scripts/delete_index.py
 
+recreate-index:
+	@python scripts/recreate_index.py
+
 check-elasticsearch:
 	@python scripts/check_elasticsearch.py
 

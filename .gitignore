@@ -3,12 +3,16 @@ venv/
 env/
 ENV/
 .venv/
+.env
 
 # Python cache
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
+
+# Data
+data/
 
 # Distribution / packaging
 .Python
