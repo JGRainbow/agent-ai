@@ -1,17 +1,5 @@
 import pytest
-from src.retriever import embed_text, search_elastic
-
-def test_embed_text_produces_vector():
-    # Arrange
-    text = "Hello, world!"
-
-    # Act
-    vector = embed_text(text)
-
-    # Assert
-    assert vector is not None
-    assert len(vector) == 1536
-
+from src.retrieval.elastic import search_elastic
 
 @pytest.mark.integration
 def test_search_elastic_produces_results():

@@ -1,5 +1,5 @@
 import pytest
-from src.chunk_and_index import chunk_texts
+from src.retrieval.chunker import chunk_texts
 
 def test_chunk_texts_respects_sentence_boundaries():
     text = (
