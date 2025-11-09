@@ -1,11 +1,18 @@
-.PHONY: install test elasticsearch elasticsearch-stop elasticsearch-logs elasticsearch-clean
+.PHONY: install test test-unit test-integration elasticsearch elasticsearch-stop elasticsearch-logs elasticsearch-clean
 .PHONY: create-index delete-index check-elasticsearch list-indices
+.PHONY: ui ui-stop
 
 install:
 	pip install -r requirements.txt
 
 test:
 	pytest
+
+test-unit:
+	pytest tests/unit
+
+test-integration:
+	pytest tests/integration -m integration
 
 # Elasticsearch Docker commands
 elasticsearch:
@@ -23,6 +30,15 @@ elasticsearch-logs:
 elasticsearch-clean:
 	docker-compose down -v
 	@echo "Elasticsearch container and volumes removed"
+
+# Elasticsearch UI
+ui:
+	docker-compose up -d deploy
+	@echo "Elasticsearch UI is available at http://localhost:1358"
+	@echo "Connect to: http://elasticsearch:9200"
+
+ui-stop:
+	docker-compose stop deploy
 
 # Elasticsearch index management scripts
 create-index:

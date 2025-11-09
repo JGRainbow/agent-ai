@@ -4,8 +4,8 @@ anyio==4.11.0
 certifi==2025.10.5
 charset-normalizer==3.4.4
 distro==1.9.0
-elastic-transport==9.2.0
-elasticsearch==9.2.0
+elastic-transport==8.11.0
+elasticsearch==8.11.0
 fastapi==0.121.1
 filelock==3.20.0
 fsspec==2025.10.0
@@ -41,7 +41,8 @@ pandas==2.3.3
 pillow==12.0.0
 pluggy==1.6.0
 pydantic==2.12.4
-pydantic_core==2.41.5
+pydantic-core==2.41.5
+pydantic-settings==2.5.2
 Pygments==2.19.2
 pytest==9.0.0
 python-dateutil==2.9.0.post0

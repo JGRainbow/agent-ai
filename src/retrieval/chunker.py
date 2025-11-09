@@ -1,7 +1,20 @@
 import re
+from typing import List, Dict, Any
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-def chunk_texts(texts: list[str], chunk_size: int, overlap: int) -> list[dict[str, str]]:
+
+def chunk_texts(texts: List[str], chunk_size: int, overlap: int) -> List[Dict[str, Any]]:
+    """
+    Split texts into chunks with sentence boundary awareness.
+
+    Args:
+        texts: List of text strings to chunk
+        chunk_size: Maximum size of each chunk
+        overlap: Number of characters to overlap between chunks
+
+    Returns:
+        List of dictionaries with: {chunk_id: str, content: str}
+    """
     splitter = RecursiveCharacterTextSplitter(
         separators=["\n\n", "\n", ". ", "? ", "! ", "; "],
         chunk_size=chunk_size,
@@ -25,7 +38,7 @@ def chunk_texts(texts: list[str], chunk_size: int, overlap: int) -> list[dict[st
             fixed_pieces.append(p)
 
         for piece in fixed_pieces:
-            chunks.append({"chunk_id": chunk_id, "content": piece})
+            chunks.append({"chunk_id": str(chunk_id), "content": piece})
             chunk_id += 1
 
     return chunks

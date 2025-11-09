@@ -80,10 +80,25 @@ Default values:
 ### Running Tests
 
 ```bash
+# Run all tests
 make test
 # or
 pytest
+
+# Run only unit tests (fast, no external services)
+make test-unit
+# or
+pytest tests/unit
+
+# Run only integration tests (requires Elasticsearch)
+make test-integration
+# or
+pytest tests/integration -m integration
 ```
+
+**Test Structure:**
+- `tests/unit/` - Fast, isolated unit tests with mocks
+- `tests/integration/` - Integration tests that require external services (marked with `@pytest.mark.integration`)
 
 ### Running the API
 
@@ -105,17 +120,19 @@ Once the server is running, visit:
 
 ```python
 from src.retrieval.chunker import chunk_texts
-from src.retrieval.elastic import index_documents, create_index_if_not_exists
+from src.adapters.elasticsearch_repository import ElasticsearchRepository
+from src.config import settings
 
-# Create index
-create_index_if_not_exists()
+# Create repository and index
+repo = ElasticsearchRepository()
+repo.create_index_if_not_exists()
 
 # Chunk your documents
 texts = ["Your document text here..."]
-chunks = chunk_texts(texts, chunk_size=500, overlap=50)
+chunks = chunk_texts(texts, chunk_size=settings.default_chunk_size, overlap=settings.default_chunk_overlap)
 
 # Index chunks
-index_documents([
+repo.index_documents([
     {"id": chunk["chunk_id"], "doc_name": "document.pdf", "text": chunk["content"]}
     for chunk in chunks
 ])
@@ -129,15 +146,29 @@ index_documents([
 - `make elasticsearch-logs` - View Elasticsearch logs
 - `make elasticsearch-clean` - Remove container and volumes
 
+### Elasticsearch UI
+- `make ui` - Start Dejavu (Elasticsearch web UI) at http://localhost:1358
+- `make ui-stop` - Stop the UI container
+
+**Using the UI:**
+1. Run `make ui` to start the UI
+2. Open http://localhost:1358 in your browser
+3. When prompted, enter the Elasticsearch URL: `http://elasticsearch:9200`
+4. You can now browse indices, view documents, and run queries
+
 ### Index Management
 - `make create-index` - Create the Elasticsearch index
 - `make delete-index` - Delete the Elasticsearch index
 - `make check-elasticsearch` - Check Elasticsearch status and index info
 - `make list-indices` - List all Elasticsearch indices
 
+### Testing Commands
+- `make test` - Run all tests
+- `make test-unit` - Run only unit tests (fast)
+- `make test-integration` - Run integration tests (requires services)
+
 ### Other Commands
 - `make install` - Install Python dependencies
-- `make test` - Run tests
 
 ## License
 
