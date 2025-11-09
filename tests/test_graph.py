@@ -1,14 +1,28 @@
-from src.agent.graph import build_graph, run_graph
+from src.agent.graph import run_agent
 
 
 def test_graph_returns_structured_output(monkeypatch):
     # Arrange
-    monkeypatch.setattr("src.retrieval.elastic.search_elastic", lambda q, k=3: ["Sample text about name change."])
-    monkeypatch.setattr("src.agent.graph.call_llm", lambda q, docs: {"answer": "Send certificate", "confidence": 0.9})
+    def fake_retrieve(query, k=3):
+        return [
+            {"chunk_id": 1, "doc_name": "fake.pdf", "text": "Sample chunk", "score": 0.9}
+        ]
+
+    def fake_llm_call(query, docs):
+        return {"answer": "Stub answer", "confidence": 0.99}
+
+    monkeypatch.setattr("src.agent.graph.retrieve_chunks", fake_retrieve)
+    monkeypatch.setattr("src.agent.graph.call_llm", fake_llm_call)
 
     # Act
-    graph = build_graph()
-    result = run_graph(graph, "How do I change my name?")
+    result = run_agent("How do I change my name?")
 
     # Assert
-    assert result == {"answer": "Send certificate", "confidence": 0.9}
+    assert "answer" in result
+    assert "confidence" in result
+    assert "sources" in result
+    assert len(result["sources"]) == 1
+    assert result["sources"][0]["doc_name"] == "fake.pdf"
+    assert result["sources"][0]["chunk_id"] == 1
+    assert result["sources"][0]["text"] == "Sample chunk"
+    assert result["sources"][0]["score"] == 0.9
