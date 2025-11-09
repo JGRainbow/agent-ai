@@ -13,10 +13,12 @@ agent-ai/
 │   ├── models/                # Pydantic data schemas
 │   ├── config.py
 │   └── utils.py
+├── scripts/                   # Utility scripts
 ├── tests/
 ├── data/
 ├── notebooks/
-└── docker-compose.yml
+├── docker-compose.yml
+└── Makefile
 ```
 
 ## Prerequisites
@@ -51,12 +53,15 @@ curl http://localhost:9200
 
 ### 3. Create the Elasticsearch Index
 
-The index will be created automatically when you first index documents, or you can create it manually:
+Create the index with the proper vector search mapping:
 
-```python
-from src.retrieval.elastic import create_index_if_not_exists
-create_index_if_not_exists()
+```bash
+make create-index
+# or
+python scripts/create_index.py
 ```
+
+The index will also be created automatically when you first index documents.
 
 ### 4. Environment Variables (Optional)
 
@@ -116,12 +121,23 @@ index_documents([
 ])
 ```
 
-## Docker Commands
+## Makefile Commands
 
-- Start Elasticsearch: `docker-compose up -d elasticsearch`
-- Stop Elasticsearch: `docker-compose stop elasticsearch`
-- View logs: `docker-compose logs -f elasticsearch`
-- Remove everything: `docker-compose down -v`
+### Elasticsearch Management
+- `make elasticsearch` - Start Elasticsearch container
+- `make elasticsearch-stop` - Stop Elasticsearch container
+- `make elasticsearch-logs` - View Elasticsearch logs
+- `make elasticsearch-clean` - Remove container and volumes
+
+### Index Management
+- `make create-index` - Create the Elasticsearch index
+- `make delete-index` - Delete the Elasticsearch index
+- `make check-elasticsearch` - Check Elasticsearch status and index info
+- `make list-indices` - List all Elasticsearch indices
+
+### Other Commands
+- `make install` - Install Python dependencies
+- `make test` - Run tests
 
 ## License
 

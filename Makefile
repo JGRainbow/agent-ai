@@ -1,4 +1,5 @@
 .PHONY: install test elasticsearch elasticsearch-stop elasticsearch-logs elasticsearch-clean
+.PHONY: create-index delete-index check-elasticsearch list-indices
 
 install:
 	pip install -r requirements.txt
@@ -6,6 +7,7 @@ install:
 test:
 	pytest
 
+# Elasticsearch Docker commands
 elasticsearch:
 	docker-compose up -d elasticsearch
 	@echo "Waiting for Elasticsearch to be ready..."
@@ -21,3 +23,16 @@ elasticsearch-logs:
 elasticsearch-clean:
 	docker-compose down -v
 	@echo "Elasticsearch container and volumes removed"
+
+# Elasticsearch index management scripts
+create-index:
+	@python scripts/create_index.py
+
+delete-index:
+	@python scripts/delete_index.py
+
+check-elasticsearch:
+	@python scripts/check_elasticsearch.py
+
+list-indices:
+	@python scripts/list_indices.py
