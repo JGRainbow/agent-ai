@@ -52,3 +52,14 @@ check-elasticsearch:
 
 list-indices:
 	@python scripts/list_indices.py
+
+# Document indexing
+index-documents:
+	@python scripts/index_documents.py
+
+index-documents-create:
+	@python scripts/index_documents.py --create-index
+
+# Quick: Index a single PDF (usage: make index-pdf PDF=path/to/file.pdf)
+index-pdf:
+	@python scripts/index_single_pdf.py $(PDF)

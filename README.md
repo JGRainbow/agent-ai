@@ -1,6 +1,34 @@
-# Agent-AI: Name Change Assistant
+# Agent-AI: UK Name Change Assistant
 
-A RAG (Retrieval-Augmented Generation) system built with LangGraph, FastAPI, and Elasticsearch to answer questions about name change procedures.
+A RAG (Retrieval-Augmented Generation) system built with LangGraph, FastAPI, and Elasticsearch to help people understand how to change their name after marriage in the UK.
+
+## 🚀 Quick Start (Single PDF)
+
+**Want to get started quickly?** See **[QUICK_SETUP.md](QUICK_SETUP.md)** - Get a single PDF working in 5 minutes!
+
+```bash
+# 1. Install dependencies
+make install
+
+# 2. Start Elasticsearch
+make elasticsearch
+
+# 3. Create index
+make create-index
+
+# 4. Index your PDF
+python scripts/index_single_pdf.py path/to/your/document.pdf
+
+# 5. Start API and test!
+uvicorn src.api.main:app --reload
+```
+
+## 📚 Documentation
+
+- **[Quick Setup](QUICK_SETUP.md)** - Get a single PDF working in 5 minutes ⚡
+- **[Document Sources](docs/DOCUMENT_SOURCES.md)** - Official UK government documents to download
+- **[Project Roadmap](docs/PROJECT_ROADMAP.md)** - Detailed development plan and next steps
+- **[Data Directory](data/README.md)** - How to organize and index documents
 
 ## Project Structure
 
@@ -166,6 +194,10 @@ repo.index_documents([
 - `make test` - Run all tests
 - `make test-unit` - Run only unit tests (fast)
 - `make test-integration` - Run integration tests (requires services)
+
+### Document Indexing
+- `make index-documents` - Index all documents from `data/processed/`
+- `make index-documents-create` - Create index and index documents
 
 ### Other Commands
 - `make install` - Install Python dependencies
