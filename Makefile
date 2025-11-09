@@ -1,6 +1,6 @@
 .PHONY: install test test-unit test-integration elasticsearch elasticsearch-stop elasticsearch-logs elasticsearch-clean
 .PHONY: create-index delete-index check-elasticsearch list-indices
-.PHONY: ui ui-stop
+.PHONY: ui ui-stop api
 
 install:
 	pip install -r requirements.txt
@@ -63,3 +63,9 @@ index-documents-create:
 # Quick: Index a single PDF (usage: make index-pdf PDF=path/to/file.pdf)
 index-pdf:
 	@python scripts/index_single_pdf.py $(PDF)
+
+# Start the API server
+api:
+	@echo "Starting API server at http://localhost:8000"
+	@echo "Swagger UI: http://localhost:8000/docs"
+	@python -m uvicorn src.api.main:app --reload
