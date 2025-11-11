@@ -61,6 +61,31 @@ def test_reason_node():
     assert result["confidence"] == 0.9
 
 
+def test_reason_node_requests_more_info():
+    """Test that reason_node marks the state when more information is required."""
+    mock_llm = Mock(spec=AbstractLLMProvider)
+    mock_llm.generate_answer.return_value = {
+        "answer": "Unsure.",
+        "confidence": 0.4,
+        "reasoning": "Low confidence"
+    }
+
+    state: GraphState = {
+        "query": "General question",
+        "retrieved_chunks": [
+            {"chunk_id": "1", "doc_name": "test.pdf", "text": "Sample text", "score": 0.1}
+        ],
+        "result": {"answer": "", "confidence": 0.0, "sources": []}
+    }
+
+    new_state = reason_node(state, llm_provider=mock_llm)
+
+    assert new_state["needs_more_info"] is True
+    assert "follow_up" in new_state
+    assert "Please ask something more specific" in new_state["follow_up"]
+    assert new_state["result"]["answer"] == "Unsure."
+
+
 def test_graph_returns_structured_output():
     """Test the full graph execution returns the expected structure."""
     # Create a mock repository

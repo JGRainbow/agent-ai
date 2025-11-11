@@ -11,6 +11,39 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+CONFIDENCE_RETRY_THRESHOLD = 0.6
+
+def should_retry(state: GraphState) -> str:
+    """
+    Decide whether to ask a follow up question
+    Args:
+        state: The current graph state
+    Returns:
+        A string indicating the follow up question, or an empty string if no follow up is needed
+    """
+    result = state.get("result", {})
+    confidence = result.get("confidence", 0.0)
+    needs_more_info = state.get("needs_more_info", confidence < CONFIDENCE_RETRY_THRESHOLD)
+
+    # If confidence is low, ask for more information
+    if needs_more_info:
+        logger.info(
+            "retrying_with_follow_up",
+            query=state["query"],
+            confidence=confidence
+        )
+        # Optional: enrich state with follow-up question
+        state.setdefault(
+            "follow_up",
+            (
+                "I do not have enough information. "
+                "Please ask something more specific, for example about "
+                "driving licence, passport, HMRC, or marriage certificate."
+            ),
+        )
+        return "retry"
+
+    return "done"
 
 def retrieve_node(
     state: GraphState,
@@ -91,6 +124,21 @@ def reason_node(
     }
 
     state["result"] = result
+
+    # Track whether we should ask for additional information
+    if result["confidence"] < CONFIDENCE_RETRY_THRESHOLD:
+        state["needs_more_info"] = True
+        state["follow_up"] = llm_result.get(
+            "follow_up",
+            (
+                "I do not have enough information. Please ask something more specific, for "
+                "example about driving licence, passport, HMRC, or marriage certificate."
+            ),
+        )
+    else:
+        state["needs_more_info"] = False
+        state.pop("follow_up", None)
+
     return state
 
 
@@ -118,12 +166,31 @@ def build_graph(
     graph.add_node("retrieve", retrieve_with_repo)
     graph.add_node("reason", reason_with_llm)
 
-    # Set entry point
+    def ask_for_more(state: GraphState) -> GraphState:
+        logger.info("asking_for_more_information", query=state["query"])
+        state["result"] = {
+            "answer": state.get("follow_up", "Could you provide more details?"),
+            "confidence": 0.0,
+            "sources": []
+        }
+        return state
+
+    graph.add_node("follow_up", ask_for_more)
+
     graph.set_entry_point("retrieve")
 
-    # Add edges
+    # Regular path
     graph.add_edge("retrieve", "reason")
-    graph.add_edge("reason", END)
+
+    graph.add_conditional_edges(
+        "reason",
+        should_retry,
+        {
+            "retry": "follow_up",
+            "done": END,
+        },
+    )
+    graph.add_edge("follow_up", END)
 
     return graph.compile()
 
